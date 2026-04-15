@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN python3 -c "import sys; content = open('/app/entrypoint.sh', 'rb').read(); open('/app/entrypoint.sh', 'wb').write(content.replace(b'\r\n', b'\n').replace(b'\r', b'')); import os; os.chmod('/app/entrypoint.sh', 0o755)"
 
 EXPOSE 8000
 ENTRYPOINT ["/app/entrypoint.sh"]
