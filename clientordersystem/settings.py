@@ -10,22 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+def _env_bool(value):
+    return str(value).lower() in ('1', 'true', 'yes', 'on')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bof&pyvg2o0b(n7lr)(o0nwc=q3a0uft2cnf0nb_pulhxc!op_'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+def _env_list(value):
+    return [item.strip() for item in str(value).split(',') if item.strip()]
 
-ALLOWED_HOSTS = []
+
+# Production-sensitive settings should come from environment variables.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-bof&pyvg2o0b(n7lr)(o0nwc=q3a0uft2cnf0nb_pulhxc!op_')
+DEBUG = _env_bool(os.environ.get('DJANGO_DEBUG', 'False'))
+ALLOWED_HOSTS = _env_list(os.environ.get('DJANGO_ALLOWED_HOSTS', ''))
 
 
 # Application definition
@@ -42,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,12 +83,23 @@ WSGI_APPLICATION = 'clientordersystem.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DATABASE_ENGINE = os.environ.get('DJANGO_DB_ENGINE', 'django.db.backends.sqlite3')
+DATABASE_NAME = os.environ.get('DJANGO_DB_NAME', BASE_DIR / 'db.sqlite3')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': DATABASE_ENGINE,
+        'NAME': DATABASE_NAME,
     }
 }
+
+if DATABASE_ENGINE != 'django.db.backends.sqlite3':
+    DATABASES['default'].update({
+        'USER': os.environ.get('DJANGO_DB_USER', ''),
+        'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', ''),
+        'HOST': os.environ.get('DJANGO_DB_HOST', ''),
+        'PORT': os.environ.get('DJANGO_DB_PORT', ''),
+    })
 
 
 # Password validation
@@ -119,6 +136,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False'))
+CSRF_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False'))
+SECURE_SSL_REDIRECT = _env_bool(os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False'))
+X_FRAME_OPTIONS = 'DENY'
+USE_X_FORWARDED_HOST = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGOUT_REDIRECT_URL = '/accounts/login/'

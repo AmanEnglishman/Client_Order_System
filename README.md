@@ -54,7 +54,7 @@ source .venv/bin/activate  # Linux/Mac
 
 ### 3. Установка зависимостей
 ```bash
-pip install django
+pip install -r requirements.txt
 ```
 
 ### 4. Применение миграций
@@ -124,19 +124,60 @@ python manage.py runserver
 ## 🔧 Настройка
 
 ### Переменные окружения
-Создайте файл `.env` в корне проекта:
+Создайте файл `.env` в корне проекта на основе `.env.example`.
+Файл `.env` загружается автоматически при старте приложения.
+
+Пример `.env.example`:
 ```env
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///db.sqlite3
+DJANGO_SECRET_KEY=replace-with-secret
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_DB_ENGINE=django.db.backends.sqlite3
+DJANGO_DB_NAME=db.sqlite3
+DJANGO_DB_USER=
+DJANGO_DB_PASSWORD=
+DJANGO_DB_HOST=
+DJANGO_DB_PORT=
+DJANGO_SECURE_SSL_REDIRECT=False
+DJANGO_SESSION_COOKIE_SECURE=False
+DJANGO_CSRF_COOKIE_SECURE=False
 ```
 
 ### Статические файлы
-Для продакшена настройте:
+Для продакшена выполните:
+```bash
+python manage.py collectstatic
+```
+
+В `settings.py` настроены:
 ```python
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 ```
+
+### Docker
+Соберите контейнер и запустите стек:
+```bash
+docker compose build
+docker compose up -d
+```
+
+Контейнеры:
+- `web` — Django + Gunicorn
+- `nginx` — прокси и отдача `/static/`
+
+Статические файлы собираются автоматически на старте.
+
+### Установка зависимостей
+```bash
+pip install -r requirements.txt
+```
+
+### Дополнительно
+- В production обязательно установите `DJANGO_SECRET_KEY`
+- Укажите `DJANGO_ALLOWED_HOSTS` для вашего домена
+- При использовании HTTPS включите `DJANGO_SECURE_SSL_REDIRECT`, `DJANGO_SESSION_COOKIE_SECURE` и `DJANGO_CSRF_COOKIE_SECURE`
 
 ## 📝 API Endpoints
 

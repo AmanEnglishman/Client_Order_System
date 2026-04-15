@@ -58,8 +58,14 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+.env
 db.sqlite3
 db.sqlite3-journal
+staticfiles/
+
+# Virtual environments
+.venv/
+venv/
 
 # Flask stuff:
 instance/
