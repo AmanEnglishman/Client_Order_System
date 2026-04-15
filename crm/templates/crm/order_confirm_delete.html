@@ -1,0 +1,20 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Удаление заказа</h2>
+            <p class="page-note">Удаление заказа невозможно отменить.</p>
+        </div>
+    </div>
+    <div class="card">
+        <p>Вы уверены, что хотите удалить заказ клиента <strong>{{ object.client.name }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button class="btn btn-danger" type="submit">Удалить</button>
+                <a class="btn btn-secondary" href="{% url 'crm:order-list' %}">Отмена</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

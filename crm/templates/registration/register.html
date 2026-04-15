@@ -1,0 +1,39 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Регистрация</h2>
+            <p class="page-note">Создайте учетную запись для доступа к CRM.</p>
+        </div>
+    </div>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Логин</label>
+                {{ form.username }}
+                {{ form.username.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Пароль</label>
+                {{ form.password1 }}
+                {{ form.password1.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Повторите пароль</label>
+                {{ form.password2 }}
+                {{ form.password2.errors }}
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
+                <a class="btn btn-outline" href="{% url 'login' %}">Войти</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Дашборд</h2>
+            <p class="page-note">Обзор вашей CRM: клиенты, заказы и статистика.</p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">Общая статистика</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.75rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #2563eb;">{{ total_clients }}</div>
+                <div style="color: #6b7280;">Клиентов</div>
+            </div>
+            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.75rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #16a34a;">{{ total_orders }}</div>
+                <div style="color: #6b7280;">Заказов</div>
+            </div>
+            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.75rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #dc2626;">{{ total_revenue|floatformat:2 }}</div>
+                <div style="color: #6b7280;">Общая сумма</div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">Заказы по статусам</div>
+        {% if orders_by_status %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                {% for status in orders_by_status %}
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.75rem;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">{{ status.count }}</div>
+                        <div style="color: #6b7280;">{{ status.status|title }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert">Нет заказов для отображения статистики.</div>
+        {% endif %}
+    </div>
+{% endblock %}

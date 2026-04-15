@@ -1,0 +1,57 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">{% if object %}Редактирование заказа{% else %}Добавление заказа{% endif %}</h2>
+            <p class="page-note">Укажите клиента, сумму и текущий статус заказа.</p>
+        </div>
+    </div>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="client-search">Поиск клиента</label>
+                <input id="client-search" list="client-list" class="form-control" placeholder="Начните вводить имя или телефон">
+                <datalist id="client-list">
+                    {% for client_option in form.fields.client.queryset %}
+                        <option value="{{ client_option.name }} ({{ client_option.phone }})" data-id="{{ client_option.pk }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="id_client">Выбранный клиент</label>
+                {{ form.client }}
+                {{ form.client.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_total_price">Сумма</label>
+                {{ form.total_price }}
+                {{ form.total_price.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_status">Статус</label>
+                {{ form.status }}
+                {{ form.status.errors }}
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+                <a class="btn btn-secondary" href="{% url 'crm:order-list' %}">Отмена</a>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const clientSearch = document.getElementById('client-search');
+            const clientSelect = document.getElementById('id_client');
+            const clientOptions = Array.from(document.querySelectorAll('#client-list option'));
+
+            clientSearch.addEventListener('change', function () {
+                const selected = clientOptions.find(option => option.value === clientSearch.value);
+                if (selected) {
+                    clientSelect.value = selected.dataset.id;
+                }
+            });
+        });
+    </script>
+{% endblock %}

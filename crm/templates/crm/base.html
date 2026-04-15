@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Client Order System</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #111827;
+            background: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-muted: #f8fafc;
+            --border: #e2e8f0;
+            --text-muted: #6b7280;
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 20%),
+                        radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.1), transparent 18%),
+                        var(--bg-muted);
+        }
+        html { scroll-behavior: smooth; }
+        a { color: inherit; }
+        button, .button { font: inherit; }
+
+        header {
+            padding: 1rem 0;
+            background: #1e293b;
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+        .site-shell {
+            width: min(1200px, 92%);
+            margin: 0 auto;
+        }
+        .site-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .site-title {
+            margin: 0;
+            font-size: clamp(1.5rem, 2vw, 2rem);
+            letter-spacing: -0.03em;
+        }
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: rgba(255,255,255,0.92);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 999px;
+            transition: background 0.2s ease;
+        }
+        nav a:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        nav .user-badge {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            padding-left: 0.5rem;
+        }
+
+        main {
+            padding: 2rem 0 3rem;
+        }
+        .container {
+            width: min(1200px, 92%);
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .page-title {
+            margin: 0;
+            font-size: clamp(1.5rem, 2vw, 2rem);
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .toolbar form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .filter-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: flex-end;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 150px;
+        }
+        .filter-item label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+        }
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            padding: 1.4rem;
+            margin-bottom: 1.25rem;
+        }
+        .card-header {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        .card+.card {
+            margin-top: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        input[type=text], input[type=email], input[type=password], input[type=number], select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 0.85rem;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: #111827;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
+        .form-actions {
+            margin-top: 1.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .btn, button, .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            border: none;
+            border-radius: 0.85rem;
+            padding: 0.85rem 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+        .btn:hover, .button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 20px rgba(15, 23, 42, 0.12);
+        }
+        .btn-primary, .button {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-secondary, .button.secondary {
+            background: #475569;
+            color: #fff;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            color: #111827;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .alert {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 1rem 1.1rem;
+            border-radius: 0.9rem;
+        }
+        .message-list {
+            display: grid;
+            gap: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+        .message-item {
+            padding: 1rem;
+            border-radius: 0.95rem;
+            border: 1px solid transparent;
+            background: #ecfeff;
+            color: #0f172a;
+        }
+        .message-item.error { background: #fee2e2; color: #991b1b; }
+        .message-item.success { background: #dcfce7; color: #166534; }
+
+        .responsive-table {
+            overflow-x: auto;
+            border-radius: 1rem;
+            margin-top: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 640px;
+        }
+        table th, table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        table thead th {
+            background: #0f172a;
+            color: #fff;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        table tbody tr:hover { background: #f8fafc; }
+        table tbody td:first-child,
+        table thead th:first-child { border-top-left-radius: 0.75rem; }
+        table tbody td:last-child,
+        table thead th:last-child { border-top-right-radius: 0.75rem; }
+
+        .badge {
+            display: inline-flex;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 999px;
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .page-note {
+            margin: 0.5rem 0 0;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 720px) {
+            .page-header {
+                align-items: flex-start;
+            }
+            nav {
+                justify-content: flex-start;
+            }
+            .toolbar {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .toolbar form {
+                width: 100%;
+            }
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="site-shell site-header">
+        <div>
+            <h1 class="site-title">Client Order System</h1>
+            <p class="page-note">Управление клиентами и заказами в одной системе</p>
+        </div>
+        <nav>
+            <a href="{% url 'crm:dashboard' %}">Панель</a>
+            <a href="{% url 'crm:client-list' %}">Клиенты</a>
+            <a href="{% url 'crm:order-list' %}">Заказы</a>
+            {% if user.is_authenticated %}
+                <span class="user-badge">{{ user.username }}</span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none; border:none; color:#9ca3af; cursor:pointer; text-decoration:underline;">Выйти</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Войти</a>
+                <a href="{% url 'register' %}" style="margin-left:0.5rem;">Регистрация</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                if (!confirm('Вы действительно хотите удалить запись?')) {
+                    event.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Вы вышли</h2>
+            <p class="page-note">Сессия завершена. Для повторного входа используйте ссылку ниже.</p>
+        </div>
+    </div>
+    <div class="card">
+        <p>Вы успешно вышли из системы.</p>
+        <a class="btn btn-primary" href="{% url 'login' %}">Войти снова</a>
+    </div>
+{% endblock %}

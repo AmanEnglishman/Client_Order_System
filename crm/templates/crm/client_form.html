@@ -1,0 +1,54 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">{% if object %}Редактирование клиента{% else %}Добавление клиента{% endif %}</h2>
+            <p class="page-note">Заполните данные клиента для учета и связи.</p>
+        </div>
+    </div>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+                    <div class="form-group">
+                <label for="id_name">Имя</label>
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_phone">Телефон</label>
+                {{ form.phone }}
+                {{ form.phone.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_secondary_phone">Доп. телефон</label>
+                {{ form.secondary_phone }}
+                {{ form.secondary_phone.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_address">Адрес</label>
+                {{ form.address }}
+                {{ form.address.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_tags">Теги</label>
+                {{ form.tags }}
+                {{ form.tags.errors }}
+            </div>
+            <div class="form-group">
+                <label for="id_notes">Заметки</label>
+                {{ form.notes }}
+                {{ form.notes.errors }}
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+                <a class="btn btn-secondary" href="{% url 'crm:client-list' %}">Отмена</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

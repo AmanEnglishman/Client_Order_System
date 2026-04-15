@@ -1,0 +1,95 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Клиент: {{ client.name }}</h2>
+            <p class="page-note">Контактные данные и связанные заказы.</p>
+        </div>
+        <div class="toolbar">
+            <a class="btn btn-primary" href="{% url 'crm:client-edit' client.pk %}">Редактировать</a>
+            <a class="btn btn-secondary" href="{% url 'crm:client-list' %}">Вернуться</a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="form-group"><strong>Телефон:</strong> {{ client.phone }}</div>
+        <div class="form-group"><strong>Доп. телефон:</strong> {{ client.secondary_phone|default:'—' }}</div>
+        <div class="form-group"><strong>Email:</strong> {{ client.email|default:'—' }}</div>
+        <div class="form-group"><strong>Адрес:</strong> {{ client.address|linebreaksbr|default:'—' }}</div>
+        {% if client.get_tags_list %}
+            <div class="form-group"><strong>Теги:</strong>
+                {% for tag in client.get_tags_list %}
+                    <span class="badge">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="form-group"><strong>Заметки:</strong> {{ client.notes|linebreaksbr|default:'—' }}</div>
+        <div class="form-group"><strong>Создан:</strong> {{ client.created_at|date:'Y-m-d H:i' }}</div>
+    </div>
+    <div class="card">
+        <div class="card-header">История взаимодействий</div>
+        {% if interactions %}
+            <div class="message-list">
+                {% for interaction in interactions %}
+                    <div class="message-item">
+                        <div><strong>{{ interaction.get_contact_type_display }}</strong> — {{ interaction.created_at|date:'Y-m-d H:i' }}</div>
+                        <div>{{ interaction.note|linebreaksbr }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert">Нет взаимодействий.</div>
+        {% endif %}
+        <div class="form-actions" style="margin-top:1rem;">
+            <form method="post" action="{% url 'crm:add-interaction' client.pk %}" style="width:100%;">
+                {% csrf_token %}
+                <div class="filter-panel" style="padding:1rem; gap:1rem;">
+                    <div class="filter-item" style="flex:1 1 200px;">
+                        <label for="id_contact_type">Тип</label>
+                        {{ interaction_form.contact_type }}
+                    </div>
+                    <div class="filter-item" style="flex:2 1 100%;">
+                        <label for="id_note">Заметка</label>
+                        {{ interaction_form.note }}
+                    </div>
+                    <div class="filter-actions" style="padding-top:1.4rem;">
+                        <button class="btn btn-primary" type="submit">Сохранить взаимодействие</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">Заказы клиента</div>
+        {% if orders %}
+            <div class="responsive-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Создан</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td><a href="{% url 'crm:order-detail' order.pk %}">#{{ order.id }}</a></td>
+                                <td>{{ order.total_price }}</td>
+                                <td><span class="badge">{{ order.get_status_display }}</span></td>
+                                <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <a class="btn btn-outline" href="{% url 'crm:order-edit' order.pk %}">Изменить</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert">У клиента пока нет заказов.</div>
+        {% endif %}
+    </div>
+{% endblock %}

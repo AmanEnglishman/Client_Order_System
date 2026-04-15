@@ -1,0 +1,20 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Удаление клиента</h2>
+            <p class="page-note">Это действие необратимо. Убедитесь, что хотите удалить клиента.</p>
+        </div>
+    </div>
+    <div class="card">
+        <p>Вы уверены, что хотите удалить клиента <strong>{{ object.name }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button class="btn btn-danger" type="submit">Удалить</button>
+                <a class="btn btn-secondary" href="{% url 'crm:client-list' %}">Отмена</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

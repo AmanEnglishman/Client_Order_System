@@ -1,0 +1,99 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Заказы</h2>
+            <p class="page-note">Фильтруйте заказы по статусу и управляйте процессом выполнения.</p>
+        </div>
+        <div class="toolbar">
+            <a class="btn btn-primary" href="{% url 'crm:order-add' %}">Добавить заказ</a>
+            <a class="btn btn-outline" href="{% url 'crm:export-orders-csv' %}">Экспорт CSV</a>
+            <form method="get" action="" class="filter-panel">
+                <div class="filter-item">
+                    <label for="status-filter">Статус</label>
+                    <select id="status-filter" name="status">
+                        <option value="">Все статусы</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if value == status_filter %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="start-date">Дата от</label>
+                    <input id="start-date" type="date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="filter-item">
+                    <label for="end-date">Дата до</label>
+                    <input id="end-date" type="date" name="end_date" value="{{ end_date }}">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-outline" type="submit">Показать</button>
+                    <a class="btn btn-secondary" href="{% url 'crm:order-list' %}">Сбросить</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        {% if orders %}
+            <div class="responsive-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Клиент</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Создан</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td><a href="{% url 'crm:order-detail' order.pk %}">#{{ order.id }}</a></td>
+                                <td><a href="{% url 'crm:client-detail' order.client.pk %}">{{ order.client.name }}</a></td>
+                                <td>{{ order.total_price }}</td>
+                                <td><span class="badge">{{ order.get_status_display }}</span></td>
+                                <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <div class="toolbar" style="align-items:flex-start; gap:0.5rem;">
+                                        <a class="btn btn-outline" href="{% url 'crm:order-edit' order.pk %}">Изменить</a>
+                                        <a class="btn btn-danger btn-delete" href="{% url 'crm:order-delete' order.pk %}">Удалить</a>
+                                        {% if order.status != 'done' %}
+                                            <form method="post" action="{% url 'crm:order-status' order.pk 'done' %}" style="display:inline; margin:0;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button class="btn btn-secondary" type="submit">Выполнен</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if order.status != 'canceled' %}
+                                            <form method="post" action="{% url 'crm:order-status' order.pk 'canceled' %}" style="display:inline; margin:0;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button class="btn btn-danger" type="submit">Отменить</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?status={{ status_filter }}&start_date={{ start_date }}&end_date={{ end_date }}&page={{ page_obj.previous_page_number }}">Назад</a>
+                    {% endif %}
+                    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="?status={{ status_filter }}&start_date={{ start_date }}&end_date={{ end_date }}&page={{ page_obj.next_page_number }}">Вперед</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert">Нет заказов. Добавьте новый заказ.</div>
+        {% endif %}
+    </div>
+{% endblock %}
