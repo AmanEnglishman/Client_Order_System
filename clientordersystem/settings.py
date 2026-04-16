@@ -101,7 +101,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / os.environ.get('DJANGO_DB_NAME', 'db.sqlite3'),
+            'NAME': os.path.join(BASE_DIR, 'data', os.environ.get('DJANGO_DB_NAME', 'db.sqlite3')),
         }
     }
 
