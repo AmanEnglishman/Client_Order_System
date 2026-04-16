@@ -26,9 +26,10 @@ def _env_bool(value: str) -> bool:
     return value.lower() in ('true', '1', 'yes')
 
 
-DEBUG = True
+DEBUG = _env_bool(os.environ.get('DJANGO_DEBUG', 'False'))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key')
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
 
 
 # Application definition
@@ -156,6 +157,11 @@ USE_X_FORWARDED_HOST = True
 # CORS Configuration from environment variables
 CORS_ORIGINS_STRING = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_STRING.split(',')]
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://77.95.206.95:8080,http://localhost:8000,http://127.0.0.1:8000'
+).split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
