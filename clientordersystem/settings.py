@@ -183,5 +183,5 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Client Order System API',
     'DESCRIPTION': 'API документация для системы управления клиентами и заказами',
     'VERSION': '1.0.0',
-    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
 }
