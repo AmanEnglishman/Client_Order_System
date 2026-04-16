@@ -12,16 +12,23 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Production-sensitive settings should come from environment variables.
-DEBUG = True
-SECRET_KEY='django-insecure-dev-cleanup-key'
-ALLOWED_HOSTS = ['*']
+def _env_bool(value: str) -> bool:
+    """Convert string environment variable to boolean."""
+    return value.lower() in ('true', '1', 'yes')
+
+
+DEBUG = _env_bool(os.environ.get('DJANGO_DEBUG', 'False'))
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -77,13 +84,26 @@ WSGI_APPLICATION = 'clientordersystem.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DB_ENGINE = os.environ.get('DJANGO_DB_ENGINE', 'django.db.backends.sqlite3')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DB_ENGINE == 'django.db.backends.postgresql':
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': os.environ.get('DJANGO_DB_NAME', 'postgres'),
+            'USER': os.environ.get('DJANGO_DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', ''),
+            'HOST': os.environ.get('DJANGO_DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DJANGO_DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / os.environ.get('DJANGO_DB_NAME', 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
@@ -127,16 +147,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-# SESSION_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False'))
-# CSRF_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False'))
-# SECURE_SSL_REDIRECT = _env_bool(os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False'))
+SESSION_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_SESSION_COOKIE_SECURE', 'False'))
+CSRF_COOKIE_SECURE = _env_bool(os.environ.get('DJANGO_CSRF_COOKIE_SECURE', 'False'))
+SECURE_SSL_REDIRECT = _env_bool(os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False'))
 X_FRAME_OPTIONS = 'DENY'
 USE_X_FORWARDED_HOST = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS Configuration from environment variables
+CORS_ORIGINS_STRING = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_STRING.split(',')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
