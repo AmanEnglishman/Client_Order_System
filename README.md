@@ -1,6 +1,6 @@
 # Client Order System (CRM)
 
-Современная веб-система управления клиентами и заказами на базе Django.
+Современная веб-система управления клиентами и заказами на базе Django с REST API и Swagger документацией.
 
 ## 🚀 Возможности
 
@@ -9,6 +9,8 @@
 - **Заказы**: полное управление жизненным циклом заказов
 - **Аутентификация**: регистрация и авторизация пользователей
 - **Изоляция данных**: каждый пользователь видит только свои данные
+- **REST API**: полнофункциональный API для интеграции
+- **Swagger документация**: интерактивная документация API
 
 ### Расширенные возможности
 - **Обогащенные профили клиентов**:
@@ -27,10 +29,13 @@
 ## 🛠 Технологии
 
 - **Backend**: Django 6.0.4
+- **REST API**: Django REST Framework 3.14+
+- **API Documentation**: drf-spectacular (Swagger/OpenAPI)
 - **Database**: SQLite3
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Authentication**: Django Auth
 - **Charts**: Chart.js
+- **Server**: Gunicorn + Nginx (production)
 
 ## 📋 Установка и запуск
 
@@ -41,15 +46,15 @@
 ### 1. Клонирование репозитория
 ```bash
 git clone <repository-url>
-cd ClientOrderSystem
+cd Client_Order_System
 ```
 
 ### 2. Создание виртуального окружения
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
 # или
-.venv\Scripts\activate     # Windows
+venv\Scripts\activate     # Windows
 ```
 
 ### 3. Установка зависимостей
@@ -62,7 +67,7 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-### 5. Создание суперпользователя (опционально)
+### 5. Создание суперпользователя (для доступа в админку)
 ```bash
 python manage.py createsuperuser
 ```
@@ -72,9 +77,93 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Приложение будет доступно по адресу: http://127.0.0.1:8000/
+Приложение будет доступно по адресу: **http://127.0.0.1:8000/**
 
-## 📖 Использование
+## 🌐 Доступ к приложению
+
+### Web Interface
+- **Главная страница**: http://127.0.0.1:8000/
+- **Админка**: http://127.0.0.1:8000/admin/
+- **Регистрация**: http://127.0.0.1:8000/accounts/register/
+
+### API Documentation
+- **Swagger UI**: http://127.0.0.1:8000/api/docs/
+- **ReDoc**: http://127.0.0.1:8000/api/redoc/
+- **OpenAPI Schema**: http://127.0.0.1:8000/api/schema/
+
+## 📚 API Документация
+
+### Swagger UI
+Интерактивная документация доступна по адресу: **http://127.0.0.1:8000/api/docs/**
+
+Здесь вы можете:
+- Просматривать все доступные API endpoints
+- Тестировать API запросы прямо в браузере
+- Видеть примеры запросов и ответов
+- Просматривать параметры и типы данных
+
+### REST API Endpoints
+
+#### Клиенты
+```
+GET    /crm/api/clients/                    # Список клиентов с пагинацией
+POST   /crm/api/clients/                    # Создание клиента
+GET    /crm/api/clients/{id}/               # Получить клиента
+PUT    /crm/api/clients/{id}/               # Обновить клиента
+PATCH  /crm/api/clients/{id}/               # Частичное обновление
+DELETE /crm/api/clients/{id}/               # Удалить клиента
+```
+
+#### Заказы
+```
+GET    /crm/api/orders/                     # Список заказов с пагинацией
+POST   /crm/api/orders/                     # Создание заказа
+GET    /crm/api/orders/{id}/                # Получить заказ
+PUT    /crm/api/orders/{id}/                # Обновить заказ
+PATCH  /crm/api/orders/{id}/                # Частичное обновление
+DELETE /crm/api/orders/{id}/                # Удалить заказ
+```
+
+### Примеры API запросов
+
+#### Получить список клиентов
+```bash
+curl -X GET http://127.0.0.1:8000/crm/api/clients/ \
+  -H "Authorization: Token YOUR_TOKEN"
+```
+
+#### Создать нового клиента
+```bash
+curl -X POST http://127.0.0.1:8000/crm/api/clients/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token YOUR_TOKEN" \
+  -d '{
+    "name": "Иван Петров",
+    "phone": "+7-999-123-45-67",
+    "email": "ivan@example.com",
+    "address": "ул. Пушкина, д. 1"
+  }'
+```
+
+#### Получить конкретного клиента
+```bash
+curl -X GET http://127.0.0.1:8000/crm/api/clients/1/ \
+  -H "Authorization: Token YOUR_TOKEN"
+```
+
+#### Создать заказ для клиента
+```bash
+curl -X POST http://127.0.0.1:8000/crm/api/orders/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token YOUR_TOKEN" \
+  -d '{
+    "client": 1,
+    "total_price": "5000.00",
+    "status": "New"
+  }'
+```
+
+## 📖 Web Interface
 
 ### Регистрация и вход
 1. Перейдите на главную страницу
@@ -90,6 +179,7 @@ python manage.py runserver
 - **Просмотр списка**: `/orders/`
 - **Добавление заказа**: `/orders/add/`
 - **Редактирование**: `/orders/<id>/edit/`
+- **Изменение статуса**: `/orders/<id>/status/<status>/`
 
 ### Дашборд
 Главная страница (`/`) содержит:
@@ -100,108 +190,175 @@ python manage.py runserver
 ## 📊 Модели данных
 
 ### Client (Клиент)
-- `name` - Имя
-- `phone` - Основной телефон
-- `secondary_phone` - Дополнительный телефон
-- `email` - Email
-- `address` - Адрес
-- `tags` - Теги (через запятую)
-- `notes` - Заметки
-- `user` - Владелец (ForeignKey)
+```python
+- id: int (первичный ключ)
+- name: string (не более 255 символов)
+- phone: string (телефон)
+- secondary_phone: string (дополнительный телефон, опционально)
+- email: string (email, опционально)
+- address: text (адрес, опционально)
+- tags: string (теги через запятую, опционально)
+- notes: text (заметки, опционально)
+- user: ForeignKey (User) # Владелец записи
+- created_at: datetime
+- updated_at: datetime
+```
 
 ### Order (Заказ)
-- `client` - Клиент (ForeignKey)
-- `total_price` - Сумма
-- `status` - Статус (New/In Progress/Done/Canceled)
-- `user` - Владелец (ForeignKey)
+```python
+- id: int (первичный ключ)
+- client: ForeignKey (Client)
+- total_price: decimal (сумма заказа)
+- status: CharField (New, In Progress, Done, Canceled)
+- user: ForeignKey (User) # Владелец записи
+- created_at: datetime
+- updated_at: datetime
+```
 
 ### Interaction (Взаимодействие)
-- `client` - Клиент (ForeignKey)
-- `contact_type` - Тип контакта (Call/Email/Meeting/Note)
-- `note` - Заметка
-- `user` - Владелец (ForeignKey)
+```python
+- id: int (первичный ключ)
+- client: ForeignKey (Client)
+- contact_type: CharField (Call, Email, Meeting, Note)
+- note: text (заметка об взаимодействии)
+- user: ForeignKey (User) # Владелец записи
+- created_at: datetime
+```
 
-## 🔧 Настройка
+## 🔧 Конфигурация
 
 ### Переменные окружения
 Создайте файл `.env` в корне проекта на основе `.env.example`.
-Файл `.env` загружается автоматически при старте приложения.
 
-Пример `.env.example`:
+Пример `.env` для разработки:
 ```env
-DJANGO_SECRET_KEY=replace-with-secret
-DJANGO_DEBUG=False
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
 DJANGO_DB_ENGINE=django.db.backends.sqlite3
 DJANGO_DB_NAME=db.sqlite3
-DJANGO_DB_USER=
-DJANGO_DB_PASSWORD=
-DJANGO_DB_HOST=
-DJANGO_DB_PORT=
-DJANGO_SECURE_SSL_REDIRECT=False
-DJANGO_SESSION_COOKIE_SECURE=False
-DJANGO_CSRF_COOKIE_SECURE=False
+
+# CORS (для frontend на другом хосте)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Пример `.env` для production:
+```env
+DJANGO_SECRET_KEY=your-production-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+
+# Database (PostgreSQL)
+DJANGO_DB_ENGINE=django.db.backends.postgresql
+DJANGO_DB_NAME=crm_db
+DJANGO_DB_USER=postgres
+DJANGO_DB_PASSWORD=your-password
+DJANGO_DB_HOST=db.yourdomain.com
+DJANGO_DB_PORT=5432
+
+# Security
+DJANGO_SECURE_SSL_REDIRECT=True
+DJANGO_SESSION_COOKIE_SECURE=True
+DJANGO_CSRF_COOKIE_SECURE=True
+
+# CORS
+CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 ### Статические файлы
 Для продакшена выполните:
 ```bash
-python manage.py collectstatic
+python manage.py collectstatic --noinput
 ```
+
+### Docker запуск
+
+#### Соберите и запустите контейнеры:
+```bash
+docker-compose build
+docker-compose up -d
+```
+
+#### Применить миграции в контейнере:
+```bash
+docker-compose exec web python manage.py migrate
+```
+
+#### Создать суперпользователя в контейнере:
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+Приложение будет доступно на порту, указанном в `docker-compose.yml` (обычно http://localhost:8080).
+
+## 🔄 REST Framework Configuration
 
 В `settings.py` настроены:
+
 ```python
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Client Order System API',
+    'DESCRIPTION': 'API документация для системы управления клиентами и заказами',
+    'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+}
 ```
 
-### Docker
-Соберите контейнер и запустите стек:
-```bash
-docker compose build
-docker compose up -d
+## 🛡️ Безопасность
+
+- **Аутентификация**: Token-based authentication в API
+- **Разрешения**: Каждый пользователь видит только свои данные
+- **CORS**: Настроенная защита от кросс-доменных запросов
+- **HTTPS**: Поддержка SSL/TLS в production
+- **CSRF Protection**: Защита от CSRF атак
+- **XSS Protection**: Заголовки безопасности
+
+## 📝 Структура проекта
+
 ```
-
-Контейнеры:
-- `web` — Django + Gunicorn
-- `nginx` — прокси и отдача `/static/`
-
-Приложение будет доступно на `http://77.95.206.95:8080`.
-
-Статические файлы собираются автоматически на старте.
-
-### Установка зависимостей
-```bash
-pip install -r requirements.txt
+.
+├── clientordersystem/       # Основные настройки Django
+│   ├── settings.py         # Конфигурация проекта
+│   ├── urls.py             # URL маршруты
+│   ├── wsgi.py             # WSGI приложение
+│   └── asgi.py             # ASGI приложение
+│
+├── crm/                    # Основное приложение
+│   ├── models.py           # Модели данных
+│   ├── views.py            # View функции/классы
+│   ├── api.py              # REST API ViewSets
+│   ├── serializers.py      # DRF сериализаторы
+│   ├── forms.py            # Django формы
+│   ├── urls.py             # URL маршруты приложения
+│   ├── admin.py            # Администраторская панель
+│   ├── management/
+│   │   └── commands/
+│   │       └── seed_data.py # Команда заполнения тестовых данных
+│   ├── migrations/         # Миграции базы данных
+│   └── templates/          # HTML шаблоны
+│
+├── nginx/                  # Конфигурация Nginx
+│   └── nginx.conf
+│
+├── requirements.txt        # Python зависимости
+├── Dockerfile             # Docker конфигурация
+├── docker-compose.yml     # Docker Compose конфигурация
+├── manage.py              # Django управление
+├── db.sqlite3             # SQLite база данных
+└── README.md              # Этот файл
 ```
-
-### Дополнительно
-- В production обязательно установите `DJANGO_SECRET_KEY`
-- Укажите `DJANGO_ALLOWED_HOSTS` для вашего домена
-- При использовании HTTPS включите `DJANGO_SECURE_SSL_REDIRECT`, `DJANGO_SESSION_COOKIE_SECURE` и `DJANGO_CSRF_COOKIE_SECURE`
-
-## 📝 API Endpoints
-
-### Клиенты
-- `GET /clients/` - Список клиентов
-- `POST /clients/add/` - Создание клиента
-- `GET /clients/<id>/` - Просмотр клиента
-- `POST /clients/<id>/edit/` - Редактирование клиента
-- `POST /clients/<id>/delete/` - Удаление клиента
-- `GET /clients/export/csv/` - Экспорт в CSV
-
-### Заказы
-- `GET /orders/` - Список заказов
-- `POST /orders/add/` - Создание заказа
-- `GET /orders/<id>/` - Просмотр заказа
-- `POST /orders/<id>/edit/` - Редактирование заказа
-- `POST /orders/<id>/status/<status>/` - Изменение статуса
-- `POST /orders/<id>/delete/` - Удаление заказа
-- `GET /orders/export/csv/` - Экспорт в CSV
-
-### Взаимодействия
-- `POST /clients/<id>/interactions/add/` - Добавление взаимодействия
 
 ## 🤝 Вклад в проект
 
@@ -211,14 +368,22 @@ pip install -r requirements.txt
 4. Отправьте в ветку (`git push origin feature/AmazingFeature`)
 5. Создайте Pull Request
 
+## 🐛 Известные проблемы
+
+- Нет известных проблем на данный момент. Пожалуйста, откройте Issue если вы найдете ошибку.
+
 ## 📄 Лицензия
 
 Этот проект распространяется под лицензией MIT. Подробности в файле `LICENSE`.
 
 ## 📞 Контакты
 
-Если у вас есть вопросы или предложения, создайте Issue в репозитории.
+Если у вас есть вопросы или предложения:
+- Создайте Issue в репозитории
+- Свяжитесь с командой разработки
 
 ---
 
-**Примечание**: Это учебный проект для демонстрации возможностей Django в создании CRM систем.
+**Последнее обновление**: 16 апреля 2026
+**Версия**: 1.0.0
+**Статус**: В разработке
