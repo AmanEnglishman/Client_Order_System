@@ -12,6 +12,7 @@ services:
       - db_data:/app/data
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - frontend_build:/app/frontend_build
     expose:
       - "8000"
 
@@ -26,9 +27,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
+      - frontend_build:/app/frontend_build:ro
 
 volumes:
   db_data:
   static_volume:
   media_volume:
+  frontend_build:
 
