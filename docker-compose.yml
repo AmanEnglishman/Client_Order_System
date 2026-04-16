@@ -28,6 +28,7 @@ services:
       - media_volume:/app/media:ro
 
 volumes:
+  db_data:
   static_volume:
   media_volume:
 
