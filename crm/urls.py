@@ -1,4 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
+from .api import ClientViewSet, OrderViewSet
+
+router = DefaultRouter()
+router.register(r'clients', ClientViewSet)
+router.register(r'orders', OrderViewSet)
 
 from .views import (
     ClientListView,
@@ -21,6 +28,7 @@ from .views import (
 app_name = 'crm'
 
 urlpatterns = [
+    path('api/', include(router.urls)),
     path('', dashboard, name='dashboard'),
     path('clients/', ClientListView.as_view(), name='client-list'),
     path('clients/add/', ClientCreateView.as_view(), name='client-add'),

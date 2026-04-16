@@ -1,13 +1,16 @@
 import csv
 
+from django.contrib import messages
+
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
-from django.db import models
+from django.db.models.functions import TruncMonth
 
 from .forms import ClientForm, OrderForm, InteractionForm, UserRegistrationForm
 from .models import Client, Order, Interaction
@@ -21,12 +24,14 @@ class ClientListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(user=self.request.user).order_by('-created_at')
+        queryset = super().get_queryset().filter(user=self.request.user)
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(
                 models.Q(name__icontains=query) | models.Q(phone__icontains=query)
             )
+        sort_by = self.request.GET.get('sort', '-created_at')
+        queryset = queryset.order_by(sort_by)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -69,6 +74,7 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        messages.success(self.request, 'Клиент успешно добавлен.')
         return super().form_valid(form)
 
 
@@ -111,7 +117,7 @@ class OrderListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Order.objects.filter(user=self.request.user).select_related('client').order_by('-created_at')
+        queryset = Order.objects.filter(user=self.request.user).select_related('client')
         status = self.request.GET.get('status')
         if status:
             queryset = queryset.filter(status=status)
@@ -121,6 +127,8 @@ class OrderListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(created_at__date__gte=start_date)
         if end_date:
             queryset = queryset.filter(created_at__date__lte=end_date)
+        sort_by = self.request.GET.get('sort', '-created_at')
+        queryset = queryset.order_by(sort_by)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -146,6 +154,7 @@ class OrderCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        messages.success(self.request, 'Заказ успешно добавлен.')
         return super().form_valid(form)
 
 
@@ -175,6 +184,7 @@ class OrderDeleteView(LoginRequiredMixin, DeleteView):
         return super().get_queryset().filter(user=self.request.user)
 
 
+@login_required
 def add_interaction(request, pk):
     client = get_object_or_404(Client, pk=pk, user=request.user)
     if request.method == 'POST':
@@ -187,6 +197,7 @@ def add_interaction(request, pk):
     return redirect('crm:client-detail', pk=pk)
 
 
+@login_required
 def update_order_status(request, pk, status):
     order = get_object_or_404(Order, pk=pk, user=request.user)
     allowed_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
@@ -196,10 +207,9 @@ def update_order_status(request, pk, status):
     return redirect(request.POST.get('next', 'crm:order-list'))
 
 
+@login_required
 def export_clients_csv(request):
     """Export user's clients to CSV."""
-    if not request.user.is_authenticated:
-        return HttpResponse('Unauthorized', status=401)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="clients.csv"'
@@ -220,10 +230,9 @@ def export_clients_csv(request):
     return response
 
 
+@login_required
 def export_orders_csv(request):
     """Export user's orders to CSV."""
-    if not request.user.is_authenticated:
-        return HttpResponse('Unauthorized', status=401)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="orders.csv"'
@@ -244,11 +253,11 @@ def export_orders_csv(request):
     return response
 
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def dashboard(request):
     """Show user dashboard with statistics."""
-    if not request.user.is_authenticated:
-        return HttpResponse('Unauthorized', status=401)
-
     # Statistics for the user
     total_clients = Client.objects.filter(user=request.user).count()
     total_orders = Order.objects.filter(user=request.user).count()
@@ -257,10 +266,16 @@ def dashboard(request):
     # Orders by status
     orders_by_status = Order.objects.filter(user=request.user).values('status').annotate(count=Count('status')).order_by('status')
 
+    # Orders by month
+    orders_by_month = Order.objects.filter(user=request.user).annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(count=Count('id')).order_by('month')
+
     context = {
         'total_clients': total_clients,
         'total_orders': total_orders,
         'total_revenue': total_revenue,
         'orders_by_status': orders_by_status,
+        'orders_by_month': orders_by_month,
     }
     return render(request, 'crm/dashboard.html', context)

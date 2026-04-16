@@ -35,8 +35,68 @@
                     </div>
                 {% endfor %}
             </div>
+            <canvas id="statusChart" width="400" height="200"></canvas>
         {% else %}
             <div class="alert">Нет заказов для отображения статистики.</div>
         {% endif %}
     </div>
+    <div class="card">
+        <div class="card-header">Заказы по месяцам</div>
+        <canvas id="monthChart" width="400" height="200"></canvas>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Status chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = {
+        labels: [{% for status in orders_by_status %}'{{ status.status|title }}',{% endfor %}],
+        datasets: [{
+            label: 'Заказы',
+            data: [{% for status in orders_by_status %}{{ status.count }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 205, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 205, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+            ],
+            borderWidth: 1
+        }]
+    };
+    new Chart(statusCtx, {
+        type: 'pie',
+        data: statusData,
+    });
+
+    // Month chart
+    const monthCtx = document.getElementById('monthChart').getContext('2d');
+    const monthData = {
+        labels: [{% for month in orders_by_month %}'{{ month.month|date:"M Y" }}',{% endfor %}],
+        datasets: [{
+            label: 'Заказы',
+            data: [{% for month in orders_by_month %}{{ month.count }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    new Chart(monthCtx, {
+        type: 'line',
+        data: monthData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
