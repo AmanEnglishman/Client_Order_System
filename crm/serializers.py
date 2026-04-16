@@ -17,7 +17,8 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    client = serializers.StringRelatedField()
+    client = serializers.PrimaryKeyRelatedField(queryset=Client.objects.all())
+    client_name = serializers.CharField(source='client.name', read_only=True)
 
     class Meta:
         model = Order
