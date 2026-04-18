@@ -50,6 +50,13 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Необходимо указать имя пользователя и пароль.')
 
 
+class AuthTokenResponseSerializer(serializers.Serializer):
+    access = serializers.CharField(read_only=True)
+    refresh = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)
+    user = UserSerializer(read_only=True)
+
+
 class InteractionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interaction

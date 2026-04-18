@@ -15,6 +15,14 @@ from django.db.models.functions import TruncMonth
 from .forms import ClientForm, OrderForm, InteractionForm, UserRegistrationForm
 from .models import Client, Order, Interaction
 
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, AuthTokenResponseSerializer
+
 
 class ClientListView(LoginRequiredMixin, ListView):
     """Display client list with search by name or phone."""
@@ -253,8 +261,6 @@ def export_orders_csv(request):
     return response
 
 
-from django.contrib.auth.decorators import login_required
-
 @login_required
 def dashboard(request):
     """Show user dashboard with statistics."""
@@ -282,17 +288,27 @@ def dashboard(request):
 
 
 # API Views for Authentication
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-
-
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses=AuthTokenResponseSerializer,
+        description='Зарегистрировать нового пользователя и получить JWT-токены.',
+        examples=[
+            {
+                'name': 'Register request',
+                'value': {
+                    'username': 'ivan',
+                    'email': 'ivan@example.com',
+                    'password': 'strong_password',
+                    'password_confirm': 'strong_password',
+                    'first_name': 'Ivan',
+                    'last_name': 'Ivanov'
+                }
+            }
+        ]
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -308,6 +324,35 @@ class RegisterAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=LoginSerializer,
+        responses=AuthTokenResponseSerializer,
+        description='Выполнить вход и получить JWT-токены.',
+        examples=[
+            {
+                'name': 'Login request',
+                'value': {
+                    'username': 'ivan',
+                    'password': 'strong_password'
+                }
+            }
+        ]
+    )
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': UserSerializer(user).data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'message': 'Вход выполнен успешно.'
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     permission_classes = [AllowAny]
 
     def post(self, request):
