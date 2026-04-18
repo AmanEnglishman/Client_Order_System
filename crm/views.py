@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, AuthTokenResponseSerializer
 
 
@@ -296,17 +296,36 @@ class RegisterAPIView(APIView):
         responses=AuthTokenResponseSerializer,
         description='Зарегистрировать нового пользователя и получить JWT-токены.',
         examples=[
-            {
-                'name': 'Register request',
-                'value': {
+            OpenApiExample(
+                'Register request',
+                summary='Request body for user registration',
+                value={
                     'username': 'ivan',
                     'email': 'ivan@example.com',
                     'password': 'strong_password',
                     'password_confirm': 'strong_password',
                     'first_name': 'Ivan',
                     'last_name': 'Ivanov'
-                }
-            }
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                'Register response',
+                summary='Successful registration response',
+                value={
+                    'user': {
+                        'id': 1,
+                        'username': 'ivan',
+                        'email': 'ivan@example.com',
+                        'first_name': 'Ivan',
+                        'last_name': 'Ivanov'
+                    },
+                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                    'access': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                    'message': 'Пользователь успешно зарегистрирован.'
+                },
+                response_only=True,
+            ),
         ]
     )
     def post(self, request):
@@ -331,30 +350,34 @@ class LoginAPIView(APIView):
         responses=AuthTokenResponseSerializer,
         description='Выполнить вход и получить JWT-токены.',
         examples=[
-            {
-                'name': 'Login request',
-                'value': {
+            OpenApiExample(
+                'Login request',
+                summary='Request body for login',
+                value={
                     'username': 'ivan',
                     'password': 'strong_password'
-                }
-            }
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                'Login response',
+                summary='Successful login response',
+                value={
+                    'user': {
+                        'id': 1,
+                        'username': 'ivan',
+                        'email': 'ivan@example.com',
+                        'first_name': 'Ivan',
+                        'last_name': 'Ivanov'
+                    },
+                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                    'access': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                    'message': 'Вход выполнен успешно.'
+                },
+                response_only=True,
+            ),
         ]
     )
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'message': 'Вход выполнен успешно.'
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    permission_classes = [AllowAny]
-
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
