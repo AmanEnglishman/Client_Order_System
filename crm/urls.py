@@ -23,12 +23,16 @@ from .views import (
     export_clients_csv,
     export_orders_csv,
     dashboard,
+    RegisterAPIView,
+    LoginAPIView,
 )
 
 app_name = 'crm'
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('api/auth/register/', RegisterAPIView.as_view(), name='api-register'),
+    path('api/auth/login/', LoginAPIView.as_view(), name='api-login'),
     path('', dashboard, name='dashboard'),
     path('clients/', ClientListView.as_view(), name='client-list'),
     path('clients/add/', ClientCreateView.as_view(), name='client-add'),
